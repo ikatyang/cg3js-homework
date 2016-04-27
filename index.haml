@@ -1,0 +1,40 @@
+- block_ids = ['a', 'b', 'c']
+- homework_ids = ['1', '2', '2p', '3', '4']
+!!! 5
+%html
+	%head
+		%meta(charset='utf-8')
+		%meta(name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no')
+		%title='Three.js Homework'
+		%link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css')
+		%script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
+		%script(src='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js')
+		:javascript
+			$.mobile.ajaxEnabled = false;
+		:css
+			.ui-block {
+				padding: 0.5em;
+			}
+			.ui-block .ui-btn {
+				margin-left: 0;
+				margin-right: 0;
+			}
+			.ui-block .ui-body {
+				padding: 0;
+				overflow: hidden;
+			}
+			.ui-block .ui-body img {
+				width: 100%;
+				display: block;
+			}
+	%body
+		%div(data-role='page')
+			%div(data-role='header')
+				%h1='Three.js Homework'
+			%div(data-role='content')
+				.ui-grid-b.ui-responsive
+					- homework_ids.each_with_index  do |homework_id, index|
+						.ui-block(class='ui-block-#{block_ids[index % block_ids.length]}')
+							%a.ui-btn.ui-corner-all(href='hw#{homework_id}/')='Homework' + homework_id
+							.ui-body.ui-body-a.ui-corner-all
+								%img(src='hw#{homework_id}/demo.gif')
