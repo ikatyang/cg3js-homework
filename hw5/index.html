@@ -74,6 +74,7 @@
       var scene, renderer, camera;
       var controls;
       var teapot1, teapot2, angle = 0;
+      var light;
       
       init();
       animate();
@@ -107,8 +108,7 @@
       	ground2.position.x *= -1;
       	scene.add(ground2);
       
-      	var light = new THREE.SpotLight(0xffffff, 1.5);
-      	light.position.set(0, 200, 0);
+      	light = new THREE.SpotLight(0xffffff, 1.5);
       	light.angle = Math.PI / 4;
       	light.exponent = 10;
       	scene.add(light);
@@ -154,7 +154,7 @@
       		teapot2.position.set(70, 0, 0);
       		scene.add(teapot2);
       		
-      		light.target = teapot2;
+      		light.target = teapot1;
       	});
       	
       	var gui = new dat.GUI();
@@ -181,6 +181,7 @@
       
       function animate() {
       	angle += 0.01;
+      	light.position.set(70 * Math.cos(angle + Math.PI), 200, 70 * Math.sin(angle + Math.PI));
       	if (teapot2)
       		teapot2.position.set(70 * Math.cos(angle), 0, 70 * Math.sin(angle));
       	controls.update();
