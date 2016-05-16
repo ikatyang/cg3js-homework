@@ -142,7 +142,7 @@
       	});
       	
       	var jsonLoader = new THREE.JSONLoader();
-      	jsonLoader.load('teapot.json', function(geometry, materials) {
+      	jsonLoader.load('../src/models/teapot.json', function(geometry, materials) {
       		teapot1 = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial());
       		teapot1.scale.set(10, 10, 10);
       		teapot1.castShadow = true;
