@@ -1,5 +1,5 @@
 - block_ids = ['a', 'b', 'c']
-- homework_ids = ['1', '2', '2p', '3', '4', '5', '6']
+- homework_ids = ['1', '2', '2p', '3', '4', '5', '6', '7']
 !!! 5
 %html
 	%head
@@ -9,8 +9,12 @@
 		%link(rel='stylesheet' href='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css')
 		%script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
 		%script(src='https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.js')
+		%script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.9.1/jquery.lazyload.min.js')
 		:javascript
 			$.mobile.ajaxEnabled = false;
+			$(function () {
+				$('img').lazyload();
+			});
 		:css
 			.ui-block {
 				padding: 0.5em;
@@ -37,4 +41,4 @@
 						.ui-block(class='ui-block-#{block_ids[index % block_ids.length]}')
 							%a.ui-btn.ui-corner-all(href='hw#{homework_id}/')='Homework' + homework_id
 							.ui-body.ui-body-a.ui-corner-all
-								%img(src='hw#{homework_id}/demo.gif')
+								%img(data-original='hw#{homework_id}/demo.gif')
