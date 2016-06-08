@@ -126,7 +126,7 @@
 				var ground = new THREE.Mesh(
 					new THREE.PlaneGeometry(400, 400),
 					new THREE.MeshLambertMaterial({
-						map: THREE.ImageUtils.loadTexture('ground.jpg')
+						map: THREE.ImageUtils.loadTexture('../src/images/ground.jpg')
 					})
 				);
 				ground.position.y = -1;
@@ -219,7 +219,7 @@
 						new THREE.MeshBasicMaterial({
 							transparent: true,
 							opacity: 0.8,
-							map: THREE.ImageUtils.loadTexture('car-top.png'),
+							map: THREE.ImageUtils.loadTexture('../src/images/wiper.png'),
 						})
 					])
 				);
@@ -268,7 +268,7 @@
 				var mesh = new THREE.Mesh(
 					new THREE.CircleGeometry(5, 32),
 					new THREE.MeshLambertMaterial({
-						map: THREE.ImageUtils.loadTexture('wheel.png')
+						map: THREE.ImageUtils.loadTexture('../src/images/wheel.png')
 					})
 				);
 				mesh.rotation.y = Math.PI / 2;

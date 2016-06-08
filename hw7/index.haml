@@ -110,11 +110,11 @@
 				gui.add(materialRTT.uniforms.fade, 'value', 0, 5).name('fade');
 				
 				var objectLoader = new THREE.ObjectLoader();
-				objectLoader.load('sala-c1-06.json', function (object) {
+				objectLoader.load('../src/models/classroom.json', function (object) {
 					object.scale.set(50, 50, 50);
 					sceneMono.add(object);
 				});
-				objectLoader.load('minecraftplayer.json', function (object) {
+				objectLoader.load('../src/models/mcplayer.json', function (object) {
 					object.position.x = 30 * -1;
 					object.position.y = 30 * 2.36;
 					object.rotation.y = Math.PI / 2;

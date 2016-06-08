@@ -24,7 +24,7 @@
   </head>
   <body>
     <h1>CG_HW2p</h1>
-    <audio id='dance-audio' src='dance.mp3'></audio>
+    <audio id='dance-audio' src='../src/audio/dance.mp3'></audio>
     <script>
       var camera, scene, renderer;
       var controls;
@@ -117,30 +117,30 @@
       	
       	var basicMaterial = new THREE.MeshLambertMaterial({
       		side: THREE.DoubleSide,
-      		map: THREE.ImageUtils.loadTexture('../src/danboard/basic.png')
+      		map: THREE.ImageUtils.loadTexture('../src/images/danboard/basic.png')
       	});
       	
       	var headMaterialArray = [
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/head1.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/head1.png')
       		}),
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/head2.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/head2.png')
       		}),
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/head3.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/head3.png')
       		}),
       		new THREE.MeshLambertMaterial({ visible: false }),
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/head5.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/head5.png')
       		}),
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/head6.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/head6.png')
       		}),
       	];
       	var headMaterial = new THREE.MeshFaceMaterial(headMaterialArray);
@@ -152,7 +152,7 @@
       		new THREE.MeshLambertMaterial({ visible:false }),
       		new THREE.MeshLambertMaterial({
       			side: THREE.DoubleSide,
-      			map: THREE.ImageUtils.loadTexture('../src/danboard/body5.png')
+      			map: THREE.ImageUtils.loadTexture('../src/images/danboard/body5.png')
       		}),
       		basicMaterial
       	];

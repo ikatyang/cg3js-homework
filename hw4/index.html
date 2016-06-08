@@ -37,7 +37,7 @@
       var angle = 0;
       var radius = 80;
       
-      $.getJSON('model.json', function (json) {
+      $.getJSON('../src/models/starship.json', function (json) {
       	init(json);
       	animate();
       });
@@ -65,7 +65,7 @@
       			new THREE.MeshLambertMaterial(),
       			new THREE.MeshLambertMaterial(),
       			new THREE.MeshLambertMaterial({
-      				map: THREE.ImageUtils.loadTexture('avatar.png')
+      				map: THREE.ImageUtils.loadTexture('../src/images/avatar.png')
       			}),
       			new THREE.MeshLambertMaterial()
       		]));
