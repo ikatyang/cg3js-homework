@@ -1,0 +1,430 @@
+!!! 5
+%html
+	%head
+		%meta(charset='utf-8')
+		%title='Three.js Homework2'
+		%script(src='../res/libraries/dat.gui.min.js')
+		%script(src='../res/libraries/three.r70.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		:css
+			h1 {
+				position: absolute;
+				top: 0;
+				width: 100%;
+				text-align: center;
+				color: #ffff00
+			}
+
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+	%body
+		%h1='CG_HW2'
+		:javascript
+			var camera, scene, renderer;
+			var controls;
+			var danboard;
+
+			init();
+			animate();
+
+			function init() {
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+				camera.position.y = 100;
+				camera.position.z = 300;
+				scene.add(camera);
+
+				var lightA = new THREE.HemisphereLight(0xffffff);
+				lightA.position.set(100, 150, 100);
+				scene.add(lightA);
+
+				var lightB = new THREE.PointLight(0xffffff);
+				lightB.position.set(-100, 150, -100);
+				scene.add(lightB);
+
+				var gridXZ = new THREE.GridHelper(100, 10);
+				gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+				scene.add(gridXZ);
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.setClearColor(0x888888);
+
+				controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+				document.body.appendChild(renderer.domElement);
+				window.addEventListener('resize', onWindowResize, false);
+
+				danboard = createDanboard(0.2);
+				scene.add(danboard);
+
+				var gui = new dat.GUI({ load: getGuiJson() });
+				addGui(gui, 'head');
+				addGui(gui, 'body');
+				addGui(gui, 'armLeft');
+				addGui(gui, 'armRight');
+				addGui(gui, 'legLeft');
+				addGui(gui, 'legRight');
+				var f = gui.addFolder('skirt');
+				f.add(danboard.skirt, 'visible');
+				gui.close();
+			}
+
+			function addGui(gui, name) {
+				var f = gui.addFolder(name);
+				gui.remember(danboard[name].rotation);
+				f.add(danboard[name].rotation, 'x', -Math.PI / 6, Math.PI / 6);
+				f.add(danboard[name].rotation, 'y', -Math.PI / 6, Math.PI / 6);
+				f.add(danboard[name].rotation, 'z', -Math.PI / 6, Math.PI / 6);
+			}
+
+			function createDanboard(scale) {
+
+				var delta = 0 * scale;
+
+				var danboard = new THREE.Object3D();
+				danboard.position.y = 125 * scale + delta;
+
+				var basicMaterial = new THREE.MeshLambertMaterial({
+					side: THREE.DoubleSide,
+					map: THREE.ImageUtils.loadTexture('../res/images/danboard/basic.png')
+				});
+
+				var headMaterialArray = [
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/head1.png')
+					}),
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/head2.png')
+					}),
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/head3.png')
+					}),
+					new THREE.MeshLambertMaterial({ visible: false }),
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/head5.png')
+					}),
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/head6.png')
+					}),
+				];
+				var headMaterial = new THREE.MeshFaceMaterial(headMaterialArray);
+
+				var bodyMaterialArray = [
+					basicMaterial,
+					basicMaterial,
+					basicMaterial,
+					new THREE.MeshLambertMaterial({ visible: false }),
+					new THREE.MeshLambertMaterial({
+						side: THREE.DoubleSide,
+						map: THREE.ImageUtils.loadTexture('../res/images/danboard/body5.png')
+					}),
+					basicMaterial
+				];
+				var bodyMaterial = new THREE.MeshFaceMaterial(bodyMaterialArray);
+
+				var mesh;
+
+				var body = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(125 * scale, 200 * scale, 125 * scale),
+					bodyMaterial);
+				mesh.position.y = 100 * scale;
+				body.add(mesh);
+				danboard.add(danboard['body'] = body);
+
+				var head = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(250 * scale, 160 * scale, 180 * scale),
+					headMaterial);
+				mesh.position.y = 80 * scale;
+				head.add(mesh);
+				head.position.y = 200 * scale + delta;
+				body.add(danboard['head'] = head);
+
+				var armLeft = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(125 * scale, 50 * scale, 50 * scale),
+					basicMaterial);
+				mesh.position.x = -62.5 * scale;
+				armLeft.add(mesh);
+				armLeft.position.x = -62.5 * scale - delta;
+				armLeft.position.y = 155 * scale;
+				body.add(danboard['armLeft'] = armLeft);
+
+				var armRight = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(125 * scale, 50 * scale, 50 * scale),
+					basicMaterial);
+				mesh.position.x = 62.5 * scale;
+				armRight.add(mesh);
+				armRight.position.x = 62.5 * scale + delta;
+				armRight.position.y = 155 * scale;
+				body.add(danboard['armRight'] = armRight);
+
+				var legLeft = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(50 * scale, 125 * scale, 100 * scale),
+					basicMaterial);
+				mesh.position.y = -62.5 * scale;
+				legLeft.add(mesh);
+				legLeft.position.x = -37.5 * scale;
+				legLeft.position.y = 0 * scale - delta;
+				body.add(danboard['legLeft'] = legLeft);
+
+				var legRight = createJoint(scale);
+				mesh = new THREE.Mesh(
+					new THREE.BoxGeometry(50 * scale, 125 * scale, 100 * scale),
+					basicMaterial);
+				mesh.position.y = -62.5 * scale;
+				legRight.add(mesh);
+				legRight.position.x = 37.5 * scale;
+				legRight.position.y = 0 * scale - delta;
+				body.add(danboard['legRight'] = legRight);
+
+				var skirt = new THREE.Object3D();
+				body.add(danboard['skirt'] = skirt);
+
+				var skirtF = new THREE.Object3D();
+				mesh = new THREE.Mesh(
+					new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+					basicMaterial);
+				mesh.position.y = -31.25 * scale;
+				skirtF.add(mesh);
+				skirtF.rotation.x = Math.PI / 6;
+				skirtF.position.y = 0 * scale;
+				skirtF.position.z = -62.5 * scale;
+				skirt.add(skirtF);
+
+				var skirtN = new THREE.Object3D();
+				mesh = new THREE.Mesh(
+					new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+					basicMaterial);
+				mesh.position.y = -31.25 * scale;
+				skirtN.add(mesh);
+				skirtN.rotation.x = Math.PI / -6;
+				skirtN.position.y = 0 * scale;
+				skirtN.position.z = 62.5 * scale;
+				skirt.add(skirtN);
+
+				var skirtL = new THREE.Object3D();
+				mesh = new THREE.Mesh(
+					new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+					basicMaterial);
+				mesh.position.y = -31.25 * scale;
+				mesh.rotation.y = Math.PI / 2;
+				skirtL.add(mesh);
+				skirtL.rotation.z = Math.PI / -6;
+				skirtL.position.x = -62.5 * scale;
+				skirtL.position.y = 0 * scale;
+				skirt.add(skirtL);
+
+				var skirtR = new THREE.Object3D();
+				mesh = new THREE.Mesh(
+					new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+					basicMaterial);
+				mesh.position.y = -31.25 * scale;
+				mesh.rotation.y = Math.PI / 2;
+				skirtR.add(mesh);
+				skirtR.rotation.z = Math.PI / 6;
+				skirtR.position.x = 62.5 * scale;
+				skirtR.position.y = 0 * scale;
+				skirt.add(skirtR);
+
+				return danboard;
+			}
+
+			function createJoint(scale) {
+				return new THREE.Mesh(
+					new THREE.SphereGeometry(25 * scale),
+					new THREE.MeshLambertMaterial({ wireframe: true }));
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+
+			function animate() {
+				controls.update();
+				requestAnimationFrame(animate);
+				renderer.render(scene, camera);
+			}
+
+			function getGuiJson() {
+				return {
+					"preset": "Default",
+					"remembered": {
+						"Default": {
+							"0": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"1": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"2": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"3": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"4": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"5": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							}
+						},
+						"Pose1": {
+							"0": {
+								"x": -0.38500709929771215,
+								"y": 0.22710613769654575,
+								"z": -0.24641542299712543
+							},
+							"1": {
+								"x": -0.36190848658094765,
+								"y": 0.27330336313007464,
+								"z": -0.20021819756359654
+							},
+							"2": {
+								"x": -0.5120494692399166,
+								"y": 0.296401975846839,
+								"z": -0.4543029374480055
+							},
+							"3": {
+								"x": -0.5235987755982988,
+								"y": 0.33104989492198567,
+								"z": -0.18866889120521435
+							},
+							"4": {
+								"x": -0.4889508565231521,
+								"y": 0,
+								"z": 0
+							},
+							"5": {
+								"x": -0.4543029374480055,
+								"y": 0.48119087758095447,
+								"z": -0.2579647293555077
+							}
+						},
+						"Pose2": {
+							"0": {
+								"x": -0.3734577929393299,
+								"y": -0.31571126114741876,
+								"z": 0.33104989492198567
+							},
+							"1": {
+								"x": -0.3734577929393299,
+								"y": -0.20021819756359654,
+								"z": 0.2848526694884568
+							},
+							"2": {
+								"x": -0.3965564056560944,
+								"y": 0.296401975846839,
+								"z": -0.2810633420722721
+							},
+							"3": {
+								"x": -0.4081057120144766,
+								"y": 0.35414850763875017,
+								"z": -0.2810633420722721
+							},
+							"4": {
+								"x": -0.35035918022256546,
+								"y": 0.2617540567716924,
+								"z": -0.1655702784884499
+							},
+							"5": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							}
+						},
+						"Pose3": {
+							"0": {
+								"x": 0.5235987755982988,
+								"y": 0.5235987755982988,
+								"z": 0.5235987755982988
+							},
+							"1": {
+								"x": -0.5235987755982988,
+								"y": 0.5235987755982988,
+								"z": -0.5235987755982988
+							},
+							"2": {
+								"x": -0.5235987755982988,
+								"y": -0.5235987755982988,
+								"z": 0
+							},
+							"3": {
+								"x": 0,
+								"y": 0,
+								"z": 0
+							},
+							"4": {
+								"x": 0.5235987755982988,
+								"y": 0.5235987755982988,
+								"z": -0.5235987755982988
+							},
+							"5": {
+								"x": -0.5235987755982988,
+								"y": 0.5235987755982988,
+								"z": 0.5235987755982988
+							}
+						}
+					},
+					"closed": false,
+					"folders": {
+						"head": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						},
+						"body": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						},
+						"armLeft": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						},
+						"armRight": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						},
+						"legLeft": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						},
+						"legRight": {
+							"preset": "Default",
+							"closed": true,
+							"folders": {}
+						}
+					}
+				};
+			}

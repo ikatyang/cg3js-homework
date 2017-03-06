@@ -1,0 +1,95 @@
+!!! 5
+%html
+	%head
+		%meta(charset='utf-8')
+		%title='Three.js Homework4'
+		%script(src='../res/libraries/jquery.min.js')
+		%script(src='../res/libraries/three.r70.min.js')
+		%script(src='../res/libraries/OrbitControls.js')
+		:css
+			.top {
+				position: absolute;
+				top: 0;
+				width: 100%;
+				text-align: center;
+				color: #ffff00
+			}
+
+			h1 {
+				display: inline-block;
+			}
+
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+	%body
+		.top
+			%h1='CG_HW4'
+			%a(href='https://clara.io/view/862886e8-3732-4f80-8e2e-3c29c9f40a03' target='_blank')='(model)'
+		:javascript
+			var scene, renderer, camera;
+			var controls;
+			var model, box;
+			var angle = 0;
+			var radius = 80;
+
+			$.getJSON('../res/models/starship.json', function (json) {
+				init(json);
+				animate();
+			});
+
+			function init(json) {
+				scene = new THREE.Scene();
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.setClearColor(0x888888);
+				document.body.appendChild(renderer.domElement);
+
+				camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+				camera.position.y = 200;
+				camera.position.z = 200;
+
+				model = new THREE.ObjectLoader().parse(json);
+				model.scale.set(2, 2, 2);
+				scene.add(model);
+
+				box = new THREE.Mesh(
+					new THREE.BoxGeometry(40, 40, 40),
+					new THREE.MeshFaceMaterial([
+						new THREE.MeshLambertMaterial(),
+						new THREE.MeshLambertMaterial(),
+						new THREE.MeshLambertMaterial(),
+						new THREE.MeshLambertMaterial(),
+						new THREE.MeshLambertMaterial({
+							map: THREE.ImageUtils.loadTexture('../res/images/avatar.png')
+						}),
+						new THREE.MeshLambertMaterial()
+					]));
+				box.position.y = 20;
+				scene.add(box);
+
+				controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+				var gridXZ = new THREE.GridHelper(100, 10);
+				gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+				scene.add(gridXZ);
+
+				window.addEventListener('resize', onWindowResize, false);
+			}
+
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
+
+			function animate() {
+				angle += 0.01;
+				model.position.set(radius * Math.cos(angle), 20, radius * Math.sin(angle));
+				model.rotation.y = -angle;
+				box.lookAt(model.position);
+				controls.update();
+				requestAnimationFrame(animate);
+				renderer.render(scene, camera);
+			}

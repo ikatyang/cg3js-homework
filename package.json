@@ -1,0 +1,8 @@
+{
+  "name": "threejs-homework",
+  "author": "ikatyang",
+  "scripts": {
+    "build": "node ./scripts/build.js ./src .",
+    "preview": "python -m http.server"
+  }
+}
