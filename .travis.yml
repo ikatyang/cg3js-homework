@@ -7,6 +7,9 @@ script:
 - npm run build
 
 after_success:
+- git remote -v
+- git fetch origin
+- git branch -avv
 - git checkout -b gh-pages --track origin/gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
