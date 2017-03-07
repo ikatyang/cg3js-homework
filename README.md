@@ -4,7 +4,7 @@
 
 require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6` , `Python@3.x`
 
-#### Installation
+#### Setup
 
 ```sh
 npm install
