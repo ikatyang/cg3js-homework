@@ -7,8 +7,11 @@ script:
 - npm run build
 
 after_success:
-- cd gh-pages
-- git init
+- git checkout gh-pages
+- shopt -s extglob
+- rm -rf ./!(gh-pages)
+- mv -f ./gh-pages/* ./
+- rm -rf ./gh-pages
 - git config user.name "$GIT_USER_NAME"
 - git config user.email "$GIT_USER_EMAIL"
 - git add .
