@@ -11,7 +11,7 @@ after_success:
 - git remote set-branches --add origin gh-pages
 - git fetch
 - git branch -a
-- git checkout gh-pages
+- git checkout origin/gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
 - mv -f ./gh-pages/* ./
