@@ -1,8 +1,12 @@
-# threejs-homework
+# cg3js-homework
 
-[![build](https://travis-ci.org/ikatyang/threejs-homework.svg)](https://travis-ci.org/ikatyang/threejs-homework)
+[![build](https://travis-ci.org/ikatyang/cg3js-homework.svg)](https://travis-ci.org/ikatyang/cg3js-homework)
 
-require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6` , `Python@3.x`
+computer graphics homework using three.js
+
+## Development
+
+require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6`, `Python@3.x`
 
 #### Setup
 
