@@ -7,7 +7,7 @@ script:
 - npm run build
 
 after_success:
-- git checkout origin/gh-pages
+- git checkout -b gh-pages --track origin/gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
 - mv -f ./gh-pages/* ./
