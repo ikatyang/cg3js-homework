@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>Three.js Homework2p</title>
+    <script src='../res/libraries/jquery.min.js'></script>
+    <script src='../res/libraries/dat.gui.min.js'></script>
+    <script src='../res/libraries/three.r70.min.js'></script>
+    <script src='../res/libraries/OrbitControls.js'></script>
+    <style>
+      h1 {
+      	position: absolute;
+      	top: 0;
+      	width: 100%;
+      	text-align: center;
+      	color: #ffff00
+      }
+      
+      body {
+      	margin: 0;
+      	overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CG_HW2p</h1>
+    <audio id='dance-music' src='../res/audios/dance.mp3'></audio>
+    <script>
+      var camera, scene, renderer;
+      var controls;
+      var danboard;
+      var scale = 0.2;
+      var clock;
+      var gcontrols = {
+      	action: 'run',
+      	perspective: 'god',
+      	speed: 1,
+      	_action: null,
+      	_perspective: null,
+      	_speed: null,
+      };
+      var armLength = 150;
+      var legLength = 150;
+      
+      init();
+      animate();
+      
+      function init() {
+      	scene = new THREE.Scene();
+      
+      	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 5000 * scale);
+      	scene.add(camera);
+      
+      	var lightA = new THREE.PointLight(0xffffff);
+      	lightA.position.set(500 * scale, 750 * scale, 500 * scale);
+      	scene.add(lightA);
+      
+      	var lightB = new THREE.HemisphereLight(0xffffff);
+      	lightB.position.set(-500 * scale, 750 * scale, -500 * scale);
+      	scene.add(lightB);
+      
+      	var gridXZ = new THREE.GridHelper(500 * scale, 50 * scale);
+      	gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+      	scene.add(gridXZ);
+      
+      	var ring = new THREE.Mesh(
+      		new THREE.RingGeometry(225 * scale, 275 * scale, 32),
+      		new THREE.MeshBasicMaterial({ color: 'blue' })
+      	);
+      	ring.rotation.x = -Math.PI / 2;
+      	scene.add(ring);
+      
+      	renderer = new THREE.WebGLRenderer();
+      	renderer.setSize(window.innerWidth, window.innerHeight);
+      	renderer.setClearColor(0x888888);
+      
+      	controls = new THREE.OrbitControls(camera, renderer.domElement);
+      
+      	document.body.appendChild(renderer.domElement);
+      	window.addEventListener('resize', onWindowResize, false);
+      
+      	danboard = createDanboard();
+      	scene.add(danboard);
+      
+      	var gui = new dat.GUI();
+      	gui.add(gcontrols, 'action', {
+      		'Run': 'run',
+      		'Dance': 'dance',
+      	}).onChange(onChangeAction).name('Action');
+      	gui.add(gcontrols, 'perspective', {
+      		'God\'s': 'god',
+      		'3rd Person': '3rd',
+      	}).onChange(onChangePerspective).name('Perspective');
+      	gui.add(gcontrols, 'speed', 0, 10).name('Speed').onChange(onChangeSpeed);
+      	addGui(gui, 'danbo',    'position', -300 * scale, 300 * scale, ['x', 'z']);
+      	addGui(gui, 'head',     'rotation', -Math.PI / 1, Math.PI / 1, ['x', 'y', 'z']);
+      	addGui(gui, 'body',     'rotation', -Math.PI * 2,           0, ['y', 'z']);
+      	addGui(gui, 'armLeft',  'rotation', -Math.PI / 1, Math.PI / 1, ['x', 'z']);
+      	addGui(gui, 'armRight', 'rotation', -Math.PI / 1, Math.PI / 1, ['x', 'z']);
+      	addGui(gui, 'legLeft',  'rotation', -Math.PI / 1, Math.PI / 1, ['x', 'z']);
+      	addGui(gui, 'legRight', 'rotation', -Math.PI / 1, Math.PI / 1, ['x', 'z']);
+      	gui.open();
+      
+      	onChangeSpeed(gcontrols.speed);
+      	onChangeAction(gcontrols.action);
+      	onChangePerspective(gcontrols.perspective);
+      }
+      
+      function addGui(gui, name, property, min, max, subProperties) {
+      	var f = arguments.callee.folder;
+      	if (f === undefined) {
+      		f = arguments.callee.folder = gui.addFolder('States');
+      	}
+      	for (var i = 0; i < subProperties.length; i++) {
+      		var subProperty = subProperties[i];
+      		f.add(danboard[name][property], subProperty, min, max)
+      			.name(name + '.' + property.substring(0, 3) + '.' + subProperty)
+      			.listen();
+      	}
+      }
+      
+      function createDanboard() {
+      
+      	var delta = 0 * scale;
+      
+      	var danboard = new THREE.Object3D();
+      	danboard['danbo'] = danboard;
+      
+      	THREE.ImageUtils.crossOrigin = '';
+      	var basicMaterial = new THREE.MeshLambertMaterial({
+      		side: THREE.DoubleSide,
+      		map: THREE.ImageUtils.loadTexture('../res/images/danboard/basic.png')
+      	});
+      
+      	var headMaterialArray = [
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/head1.png')
+      		}),
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/head2.png')
+      		}),
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/head3.png')
+      		}),
+      		new THREE.MeshLambertMaterial({ visible: false }),
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/head5.png')
+      		}),
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/head6.png')
+      		}),
+      	];
+      	var headMaterial = new THREE.MeshFaceMaterial(headMaterialArray);
+      
+      	var bodyMaterialArray = [
+      		basicMaterial,
+      		basicMaterial,
+      		basicMaterial,
+      		new THREE.MeshLambertMaterial({ visible:false }),
+      		new THREE.MeshLambertMaterial({
+      			side: THREE.DoubleSide,
+      			map: THREE.ImageUtils.loadTexture('../res/images/danboard/body5.png')
+      		}),
+      		basicMaterial
+      	];
+      	var bodyMaterial = new THREE.MeshFaceMaterial(bodyMaterialArray);
+      
+      	var mesh;
+      
+      	var body = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(125 * scale, 200 * scale, 125 * scale),
+      		bodyMaterial
+      	);
+      	mesh.position.y = 100 * scale;
+      	body.add(mesh);
+      	body.position.y = legLength * scale + delta;
+      	danboard.add(danboard['body'] = body);
+      
+      	var head = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(250 * scale, 160 * scale, 180 * scale),
+      		headMaterial
+      	);
+      	mesh.position.y = 80 * scale;
+      	head.add(mesh);
+      	head.position.y = 200 * scale + delta;
+      	body.add(danboard['head'] = head);
+      
+      	var armLeft = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(50 * scale, armLength * scale, 50 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -armLength / 2 * scale;
+      	armLeft.add(mesh);
+      	armLeft.position.x = -87.5 * scale - delta;
+      	armLeft.position.y = 180 * scale;
+      	body.add(danboard['armLeft'] = armLeft);
+      
+      	var armRight = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(50 * scale, armLength * scale, 50 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -armLength / 2 * scale;
+      	armRight.add(mesh);
+      	armRight.position.x = 87.5 * scale + delta;
+      	armRight.position.y = 180 * scale;
+      	body.add(danboard['armRight'] = armRight);
+      
+      	var legLeft = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(50 * scale, legLength * scale, 100 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -legLength / 2 * scale;
+      	legLeft.add(mesh);
+      	legLeft.position.x = -37.5 * scale;
+      	legLeft.position.y = 0 * scale - delta;
+      	body.add(danboard['legLeft'] = legLeft);
+      
+      	var legRight = createJoint(scale);
+      	mesh = new THREE.Mesh(
+      		new THREE.BoxGeometry(50 * scale, legLength * scale, 100 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -legLength / 2 * scale;
+      	legRight.add(mesh);
+      	legRight.position.x = 37.5 * scale;
+      	legRight.position.y = 0 * scale - delta;
+      	body.add(danboard['legRight'] = legRight);
+      
+      	var skirt = new THREE.Object3D();
+      	body.add(danboard['skirt'] = skirt);
+      
+      	var skirtF = new THREE.Object3D();
+      	mesh = new THREE.Mesh(
+      		new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -31.25 * scale;
+      	skirtF.add(mesh);
+      	skirtF.rotation.x = Math.PI / 6;
+      	skirtF.position.y = 0 * scale;
+      	skirtF.position.z = -62.5 * scale;
+      	skirt.add(skirtF);
+      
+      	var skirtN = new THREE.Object3D();
+      	mesh = new THREE.Mesh(
+      		new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -31.25 * scale;
+      	skirtN.add(mesh);
+      	skirtN.rotation.x = Math.PI / -6;
+      	skirtN.position.y = 0 * scale;
+      	skirtN.position.z = 62.5 * scale;
+      	skirt.add(skirtN);
+      
+      	var skirtL = new THREE.Object3D();
+      	mesh = new THREE.Mesh(
+      		new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -31.25 * scale;
+      	mesh.rotation.y = Math.PI / 2;
+      	skirtL.add(mesh);
+      	skirtL.rotation.z = Math.PI / -6;
+      	skirtL.position.x = -62.5 * scale;
+      	skirtL.position.y = 0 * scale;
+      	skirt.add(skirtL);
+      
+      	var skirtR = new THREE.Object3D();
+      	mesh = new THREE.Mesh(
+      		new THREE.PlaneGeometry(125 * scale, 62.5 * scale),
+      		basicMaterial
+      	);
+      	mesh.position.y = -31.25 * scale;
+      	mesh.rotation.y = Math.PI / 2;
+      	skirtR.add(mesh);
+      	skirtR.rotation.z = Math.PI / 6;
+      	skirtR.position.x = 62.5 * scale;
+      	skirtR.position.y = 0 * scale;
+      	skirt.add(skirtR);
+      
+      	return danboard;
+      }
+      
+      function createJoint() {
+      	return new THREE.Mesh(
+      		new THREE.SphereGeometry(25 * scale),
+      		new THREE.MeshLambertMaterial({ wireframe: true })
+      	);
+      }
+      
+      function onWindowResize() {
+      	camera.aspect = window.innerWidth / window.innerHeight;
+      	camera.updateProjectionMatrix();
+      	renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+      
+      function animate() {
+      	controls.update();
+      	updateCamera();
+      	updateAction();
+      	requestAnimationFrame(animate);
+      	renderer.render(scene, camera);
+      }
+      
+      function updateAction() {
+      	var action = gcontrols._action;
+      	if (action === 'run') {
+      		updateActionRun();
+      	} else if (action === 'dance') {
+      		updateActionDance();
+      	}
+      }
+      
+      function updateActionRun() {
+      	var self = arguments.callee;
+      	var delta = clock.getDelta();
+      	var speed = gcontrols._speed;
+      
+      	var radius = 250 * scale;
+      	var unitKey = speed * delta;
+      	var unitDistance = 2 * ((legLength * scale * 2 * Math.PI) * (60 / 360) + (2 * 50 * scale)) * speed * delta;
+      
+      	self.key = (self.key + unitKey) % 1;
+      	self.angle = (self.angle + (unitDistance / (2 * Math.PI * radius)) * 2 * Math.PI) % (Math.PI * 2);
+      
+      	danboard.position.set(
+      		Math.cos(self.angle) * radius,
+      		0,
+      		Math.sin(self.angle) * radius
+      	);
+      	danboard.body.rotation.y = -self.angle;
+      	setKeyframe(getKeyframesRun(), self.key);
+      }
+      
+      function updateActionDance() {
+      	danboard.position.set(0, 0, 0);
+      	var self = arguments.callee;
+      	var delta = clock.getDelta();
+      	var speed = gcontrols.speed;
+      	self.key = (self.key + speed * delta) % 6.25;
+      	setKeyframe(getKeyframesDance(), self.key);
+      }
+      
+      function updateCamera() {
+      	if (gcontrols._perspective === '3rd') {
+      		var cameraPosition = new THREE.Vector3(0, 800 * scale, -500 * scale);
+      		camera.position.copy(danboard.localToWorld(cameraPosition));
+      		camera.lookAt(danboard.localToWorld(new THREE.Vector3(0, 0, 0)))
+      	}
+      }
+      
+      function onChangeSpeed(newValue) {
+      	document.getElementById('dance-music').playbackRate = newValue;
+      	gcontrols._speed = newValue;
+      }
+      
+      function onChangePerspective(newValue) {
+      	if (newValue === 'god') {
+      		camera.position.set(0, 500 * scale, 1500 * scale);
+      	}
+      	gcontrols._perspective = newValue;
+      }
+      
+      function onChangeAction(newValue) {
+      	var audio = document.getElementById('dance-music');
+      	audio.pause();
+      	if (newValue === 'run') {
+      		updateActionRun.angle = 0;
+      		updateActionRun.key = 0;
+      	} else if (newValue === 'dance') {
+      		updateActionDance.key = 0;
+      		audio.currentTime = 0;
+      		audio.play();
+      	}
+      	clock = new THREE.Clock();
+      	danboard.danbo.position.set(0, 0, 0);
+      	danboard.head.rotation.set(0, 0, 0);
+      	danboard.body.rotation.set(0, 0, 0);
+      	danboard.armLeft.rotation.set(0, 0, 0);
+      	danboard.armRight.rotation.set(0, 0, 0);
+      	danboard.legLeft.rotation.set(0, 0, 0);
+      	danboard.legRight.rotation.set(0, 0, 0);
+      	gcontrols._action = newValue;
+      }
+      
+      function setKeyframe(keyframes, key) {
+      	for (var name in keyframes) {
+      		for (var property in keyframes[name]) {
+      			for (var subProperty in keyframes[name][property]) {
+      				var frames = keyframes[name][property][subProperty];
+      				for (var i = 0; i < frames.length - 1; i++) {
+      					var frameMin = frames[i];
+      					var frameMax = frames[i + 1];
+      					if (key >= frameMin.key && key <= frameMax.key) {
+      						var value = frameMin.value + (key - frameMin.key) * (frameMax.value - frameMin.value) / (frameMax.key - frameMin.key);
+      						danboard[name][property][subProperty] = value;
+      						break;
+      					}
+      				}
+      			}
+      		}
+      	}
+      }
+      
+      function getKeyframesRun() {
+      	return {
+      		'head': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,    value: 0             },
+      					{ key: 0.25, value: Math.PI / 12  },
+      					{ key: 0.5,  value: 0             },
+      					{ key: 0.75, value: -Math.PI / 12 },
+      					{ key: 1,    value: 0             },
+      				],
+      				'y': [
+      					{ key: 0,    value: 0             },
+      					{ key: 0.25, value: Math.PI / 12  },
+      					{ key: 0.5,  value: 0             },
+      					{ key: 0.75, value: -Math.PI / 12 },
+      					{ key: 1,    value: 0             },
+      				],
+      				'z': [
+      					{ key: 0,    value: 0             },
+      					{ key: 0.5,  value: -Math.PI / 12 },
+      					{ key: 1,    value: 0             },
+      				]
+      			}
+      		},
+      		'armLeft': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,    value: 0            },
+      					{ key: 0.25, value: Math.PI / 6  },
+      					{ key: 0.5,  value: 0            },
+      					{ key: 0.75, value: -Math.PI / 6 },
+      					{ key: 1,    value: 0            },
+      				]
+      			}
+      		},
+      		'armRight': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,    value: 0            },
+      					{ key: 0.25, value: -Math.PI / 6 },
+      					{ key: 0.5,  value: 0            },
+      					{ key: 0.75, value: Math.PI / 6  },
+      					{ key: 1,    value: 0            },
+      				]
+      			}
+      		},
+      		'legLeft': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,    value: 0            },
+      					{ key: 0.25, value: -Math.PI / 6 },
+      					{ key: 0.5,  value: 0            },
+      					{ key: 0.75, value: Math.PI / 6  },
+      					{ key: 1,    value: 0            },
+      				]
+      			}
+      		},
+      		'legRight': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,    value: 0            },
+      					{ key: 0.25, value: Math.PI / 6  },
+      					{ key: 0.5,  value: 0            },
+      					{ key: 0.75, value: -Math.PI / 6 },
+      					{ key: 1,    value: 0            },
+      				]
+      			}
+      		}
+      	};
+      }
+      
+      function getKeyframesDance() {
+      	return {
+      		'danbo': {
+      			'position': {
+      				'x': [
+      					{ key: 0,   value: 0           },
+      					{ key: 1.3, value: 0           },
+      					{ key: 1.6, value: 50 * scale  },
+      					{ key: 1.9, value: -50 * scale },
+      					{ key: 2.2, value: 50 * scale  },
+      					{ key: 2.5, value: -50 * scale },
+      					{ key: 2.8, value: 50 * scale  },
+      					{ key: 3.1, value: -50 * scale },
+      					{ key: 3.4, value: 50 * scale  },
+      					{ key: 3.7, value: -50 * scale },
+      					{ key: 4,   value: 50 * scale  },
+      					{ key: 4.3, value: 0           },
+      				]
+      			}
+      		},
+      		'body': {
+      			'rotation': {
+      				'z': [
+      					{ key: 0,   value: 0             },
+      					{ key: 1.3, value: 0             },
+      					{ key: 1.6, value: -Math.PI / 12 },
+      					{ key: 1.9, value: Math.PI / 12  },
+      					{ key: 2.2, value: -Math.PI / 12 },
+      					{ key: 2.5, value: Math.PI / 12  },
+      					{ key: 2.8, value: -Math.PI / 12 },
+      					{ key: 3.1, value: Math.PI / 12  },
+      					{ key: 3.4, value: -Math.PI / 12 },
+      					{ key: 3.7, value: Math.PI / 12  },
+      					{ key: 4,   value: -Math.PI / 12 },
+      					{ key: 4.3, value: 0             },
+      				]
+      			}
+      		},
+      		'head': {
+      			'rotation': {
+      				'y': [
+      					{ key: 0,   value: 0           },
+      					{ key: 0.6, value: 0           },
+      					{ key: 0.8, value: Math.PI / 2 },
+      					{ key: 1,   value: 0           },
+      				],
+      			}
+      		},
+      		'armLeft': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,   value: 0            },
+      					{ key: 0.3, value: -Math.PI / 2 },
+      					{ key: 3.7, value: -Math.PI / 2 },
+      					{ key: 4.3, value: -Math.PI     },
+      					{ key: 4.7, value: 0            },
+      				],
+      				'z': [
+      					{ key: 0,   value: 0            },
+      					{ key: 0.3, value: Math.PI / 6  },
+      					{ key: 0.4, value: 0            },
+      					{ key: 0.6, value: Math.PI / 6  },
+      					{ key: 1,   value: Math.PI / 6  },
+      					{ key: 1.3, value: -Math.PI / 2 },
+      					{ key: 3.7, value: -Math.PI / 2 },
+      					{ key: 4.3, value: -Math.PI / 6 },
+      					{ key: 4.7, value: -Math.PI / 2 },
+      					{ key: 5.5,   value: 0          },
+      				]
+      			}
+      		},
+      		'armRight': {
+      			'rotation': {
+      				'x': [
+      					{ key: 0,   value: 0            },
+      					{ key: 0.3, value: -Math.PI / 2 },
+      					{ key: 3.7, value: -Math.PI / 2 },
+      					{ key: 4.3, value: -Math.PI     },
+      					{ key: 4.7, value: 0            },
+      				],
+      				'z': [
+      					{ key: 0,   value: 0            },
+      					{ key: 0.3, value: -Math.PI / 6 },
+      					{ key: 0.4, value: 0            },
+      					{ key: 0.6, value: -Math.PI / 6 },
+      					{ key: 1,   value: -Math.PI / 6 },
+      					{ key: 1.3, value: Math.PI / 2  },
+      					{ key: 3.7, value: Math.PI / 2  },
+      					{ key: 4.3, value: Math.PI / 6  },
+      					{ key: 4.7, value: Math.PI / 2  },
+      					{ key: 5.5,   value: 0          },
+      				]
+      			}
+      		},
+      		'legLeft': {
+      			'rotation': {
+      				'z': [
+      					{ key: 0,   value: 0            },
+      					{ key: 1,   value: 0            },
+      					{ key: 1.3, value: -Math.PI / 8 },
+      					{ key: 1.6, value: 0            },
+      					{ key: 1.9, value: -Math.PI / 8 },
+      					{ key: 2.2, value: 0            },
+      					{ key: 2.5, value: -Math.PI / 8 },
+      					{ key: 2.8, value: 0            },
+      					{ key: 3.1, value: -Math.PI / 8 },
+      					{ key: 3.4, value: 0            },
+      					{ key: 3.7, value: -Math.PI / 8 },
+      					{ key: 4,   value: 0            },
+      				]
+      			}
+      		},
+      		'legRight': {
+      			'rotation': {
+      				'z': [
+      					{ key: 0,   value: 0           },
+      					{ key: 1,   value: 0           },
+      					{ key: 1.3, value: Math.PI / 8 },
+      					{ key: 1.6, value: Math.PI / 8 },
+      					{ key: 1.9, value: 0           },
+      					{ key: 2.2, value: Math.PI / 8 },
+      					{ key: 2.5, value: 0           },
+      					{ key: 2.8, value: Math.PI / 8 },
+      					{ key: 3.1, value: 0           },
+      					{ key: 3.4, value: Math.PI / 8 },
+      					{ key: 3.7, value: 0           },
+      					{ key: 4,   value: Math.PI / 8 },
+      					{ key: 4.3, value: 0           },
+      				]
+      			}
+      		}
+      	};
+      }
+    </script>
+  </body>
+</html>

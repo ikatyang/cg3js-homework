@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <title>Three.js Homework3</title>
+    <script src='../res/libraries/jquery.min.js'></script>
+    <script src='../res/libraries/three.r70.min.js'></script>
+    <script src='../res/libraries/OrbitControls.js'></script>
+    <script src='../res/libraries/KeyboardState.js'></script>
+    <style>
+      .top, .bottom {
+      	position: absolute;
+      	left: 0;
+      	color: #ffff00;
+      	text-align: center;
+      }
+      
+      .top {
+      	width: 100%;
+      	top: 0;
+      }
+      
+      .bottom {
+      	bottom: 0;
+      	width: calc(100% - 250px);
+      }
+      
+      .bottom span {
+      	display: inline-block;
+      	background: black;
+      	margin: 0.5em;
+      	padding: 0.5em;
+      	border-radius: 0.5em;
+      	overflow: hidden;
+      }
+      
+      .bottom span.pressed {
+      	background: red;
+      }
+      
+      .carPosition {
+      	position: absolute;
+      	top: 150px;
+      	right: 0;
+      	width: 150px;
+      	text-align: center;
+      	color: #ffffff;
+      }
+      
+      body {
+      	margin: 0;
+      	overflow: hidden;
+      }
+      
+      .bird-camera-border {
+      	position: absolute;
+      	top: 0;
+      	right: 0;
+      	width: 150px;
+      	height: 150px;
+      	border: 1px solid yellow;
+      	border-top-width: 0;
+      	border-right-width: 0;
+      }
+      
+      .back-camera-border:not(.show) {
+      	display: none;
+      }
+      
+      .back-camera-border.show {
+      	position: absolute;
+      	bottom: 0;
+      	right: 0;
+      	width: 250px;
+      	height: 250px;
+      	border: 1px solid yellow;
+      	border-bottom-width: 0;
+      	border-right-width: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='top'>
+      <h1>CG_HW3</h1>
+    </div>
+    <div class='bottom'>
+      <span>W</span>
+      <span>A</span>
+      <span>S</span>
+      <span>D</span>
+      <span>space</span>
+      <span>tab</span>
+    </div>
+    <span class='carPosition'>(0, 0, 0)</span>
+    <div class='back-camera-border'></div>
+    <div class='bird-camera-border'></div>
+    <script>
+      var camera, scene, renderer;
+      var controls;
+      var birdCamera, backCamera;
+      var birdCameraSize = 150;
+      var backCameraSize = 250;
+      var car;
+      var gridXZ;
+      var cylinders;
+      
+      init();
+      animate();
+      
+      function init() {
+      	scene = new THREE.Scene();
+      
+      	camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+      	camera.position.set(0, 100, 200);
+      	scene.add(camera);
+      
+      	birdCamera = new THREE.OrthographicCamera(100 + 5, -100 - 5, -100 - 5, 100 + 5, 1, 1000);
+      	birdCamera.position.y = 100;
+      	birdCamera.lookAt(scene.position);
+      	birdCamera.rotation.z += Math.PI / 2;
+      	scene.add(birdCamera);
+      
+      	backCamera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+      	scene.add(backCamera);
+      
+      	var light = new THREE.HemisphereLight(0xffffff, 0x000000, 1);
+      	light.position.set(0, 100, 0);
+      	scene.add(light);
+      
+      	var ground = new THREE.Mesh(
+      		new THREE.PlaneGeometry(400, 400),
+      		new THREE.MeshLambertMaterial({
+      			map: THREE.ImageUtils.loadTexture('../res/images/ground.jpg')
+      		})
+      	);
+      	ground.position.y = -1;
+      	ground.rotation.x = -Math.PI / 2;
+      	scene.add(ground);
+      
+      	gridXZ = new THREE.GridHelper(200, 10);
+      	gridXZ.setColors(new THREE.Color(0xff0000), new THREE.Color(0xffffff));
+      	scene.add(gridXZ);
+      
+      	car = createCar();
+      	car.speed = 0;
+      	scene.add(car);
+      
+      	cylinders = [];
+      	for (var i = 0; i < 10; i++) {
+      		var cylinder = new THREE.Mesh(
+      			new THREE.CylinderGeometry(20, 20, 50, 32),
+      			new THREE.MeshLambertMaterial({ color: 'blue' })
+      		);
+      		cylinder.position.set(
+      			(40 + Math.random() * 160) * (Math.random() > 0.5 ? 1 : -1),
+      			25,
+      			(40 + Math.random() * 160) * (Math.random() > 0.5 ? 1 : -1)
+      		);
+      		cylinders.push(cylinder);
+      		scene.add(cylinder);
+      	}
+      	var parkingBlockGeometry = new THREE.Geometry();
+      	parkingBlockGeometry.vertices.push(
+      		new THREE.Vector3(-20, 0, -30),
+      		new THREE.Vector3(-20, 0, +30),
+      		new THREE.Vector3(+20, 0, +30),
+      		new THREE.Vector3(+20, 0, -30),
+      		new THREE.Vector3(-20, 0, -30)
+      	);
+      	for(var i = 0; i < 10; i++) {
+      		var parkingBlock = new THREE.Line(
+      			parkingBlockGeometry,
+      			new THREE.LineBasicMaterial({ color: 'cyan' })
+      		);
+      		parkingBlock.position.set(
+      			(40 + Math.random() * 160) * (Math.random() > 0.5 ? 1 : -1),
+      			0,
+      			(40 + Math.random() * 160) * (Math.random() > 0.5 ? 1 : -1)
+      		);
+      		parkingBlock.rotation.y = -Math.PI + Math.random() * Math.PI * 2;
+      		scene.add(parkingBlock);
+      	}
+      
+      	renderer = new THREE.WebGLRenderer();
+      	renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      	controls = new THREE.OrbitControls(camera, renderer.domElement);
+      	controls.enable = true;
+      
+      	document.body.appendChild(renderer.domElement);
+      	window.addEventListener('resize', onWindowResize, false);
+      }
+      
+      function createCar() {
+      	var material = new THREE.MeshBasicMaterial({
+      		color: 'white',
+      		transparent: true,
+      		opacity: 0.8,
+      	});
+      	var emptyMaterial = new THREE.MeshBasicMaterial({
+      		visible: false
+      	});
+      	var car = new THREE.Mesh(
+      		new THREE.BoxGeometry(20, 16, 40),
+      		new THREE.MeshFaceMaterial([
+      			material,
+      			material,
+      			emptyMaterial,
+      			material,
+      			material,
+      			material
+      		])
+      	);
+      
+      	var carTop = new THREE.Mesh(
+      		new THREE.BoxGeometry(20, 16, 20),
+      		new THREE.MeshFaceMaterial([
+      			material,
+      			material,
+      			material,
+      			emptyMaterial,
+      			material,
+      			new THREE.MeshBasicMaterial({
+      				transparent: true,
+      				opacity: 0.8,
+      				map: THREE.ImageUtils.loadTexture('../res/images/wiper.png'),
+      			})
+      		])
+      	);
+      	carTop.position.set(0, 16, 10);
+      	car.add(carTop);
+      
+      	var carFront = new THREE.Mesh(
+      		new THREE.PlaneGeometry(20, 20),
+      		material
+      	);
+      	carFront.rotation.x = -Math.PI / 2;
+      	carFront.position.set(0, 8, -10);
+      	car.add(carFront);
+      
+      	var frontWheel = createWheel();
+      	frontWheel.position.set(0, -8, -12);
+      	frontWheel.rotation.y = 1e-3;
+      	car.frontWheel = frontWheel;
+      	car.add(frontWheel);
+      
+      	var backWheelLeft = createWheel();
+      	backWheelLeft.position.set(-8, -8, 12);
+      	car.backWheelLeft = backWheelLeft;
+      	car.add(backWheelLeft);
+      
+      	var backWheelRight = createWheel();
+      	backWheelRight.position.set(8, -8, 12);
+      	car.backWheelRight = backWheelRight;
+      	car.add(backWheelRight);
+      
+      	car.position.y = 8 + 5;
+      	return car;
+      }
+      
+      function createWheel() {
+      	var wheel = new THREE.Object3D();
+      	var mesh = new THREE.Mesh(
+      		new THREE.CylinderGeometry(5, 5, 2, 32, 1, true),
+      		new THREE.MeshLambertMaterial({
+      			color: 'black',
+      		})
+      	);
+      	mesh.rotation.z = Math.PI / 2;
+      	wheel.add(mesh);
+      	var circle = new THREE.Object3D();
+      	var mesh = new THREE.Mesh(
+      		new THREE.CircleGeometry(5, 32),
+      		new THREE.MeshLambertMaterial({
+      			map: THREE.ImageUtils.loadTexture('../res/images/wheel.png')
+      		})
+      	);
+      	mesh.rotation.y = Math.PI / 2;
+      	mesh.position.x = 1;
+      	circle.add(mesh);
+      	mesh = mesh.clone();
+      	mesh.rotation.y = -Math.PI / 2;
+      	mesh.position.x = -1;
+      	circle.add(mesh);
+      	wheel.add(circle);
+      	wheel.rotation.order = 'YXZ';
+      	return wheel;
+      }
+      
+      function onWindowResize() {
+      	camera.aspect = window.innerWidth / window.innerHeight;
+      	camera.updateProjectionMatrix();
+      	renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+      
+      function animate() {
+      	updateCar();
+      	if (cylinderTest())
+      		car.speed = 0;
+      	updateKeyboard();
+      	controls.update();
+      	requestAnimationFrame(animate);
+      	render();
+      }
+      
+      function cylinderTest() {
+      	var isIntersect = false;
+      	for (var i = 0; i < cylinders.length; i++) {
+      		var cylinder = cylinders[i];
+      		var c = car.worldToLocal(cylinder.position.clone());
+      		var r = {
+      			min: {
+      				x: -10 - c.x,
+      				y: -20 - c.z,
+      			},
+      			max: {
+      				x: 10 - c.x,
+      				y: 20 - c.z,
+      			},
+      		};
+      		var rad = 20;
+      		if (checkIntersect(r, rad)) {
+      			cylinder.material.color.set('red');
+      			isIntersect = true;
+      		} else {
+      			cylinder.material.color.set('blue');
+      		}
+      	}
+      	return isIntersect;
+      }
+      function checkIntersect(r, rad) {
+      	if (r.max.x < 0) { // left
+      		if (r.max.y < 0) { // left-bottom
+      			return (r.max.x * r.max.x + r.max.y * r.max.y < rad * rad);
+      		} else if (r.min.y > 0) { // left-top
+      			return (r.max.x * r.max.x + r.min.y * r.min.y < rad * rad);
+      		} else { // left-center
+      			return (Math.abs(r.max.x) < rad);
+      		}
+      	} else if (r.min.x > 0) { // right
+      		if (r.max.y < 0) { // right-bottom
+      			return (r.min.x * r.min.x + r.max.y * r.max.y < rad * rad);
+      		} else if (r.min.y > 0) { // right-top
+      			return (r.min.x * r.min.x + r.min.y * r.min.y < rad * rad);
+      		} else { // right-center
+      			return (Math.abs(r.min.x) < rad);
+      		}
+      	} else { // center
+      		if (r.max.y < 0) { // center-bottom
+      			return (Math.abs(r.max.y) < rad);
+      		} else if (r.min.y > 0) { // center-top
+      			return (Math.abs(r.min.y) < rad);
+      		} else { // center-center
+      			return true;
+      		}
+      	}
+      }
+      
+      function updateCar() {
+      	var self = arguments.callee;
+      	var clock = self.clock = self.clock || new THREE.Clock();
+      	var delta = clock.getDelta();
+      	if (car.speed !== 0 && delta < 1) {
+      		var theta = car.frontWheel.rotation.y;
+      		var rotationCenter = car.localToWorld(new THREE.Vector3(-24 / Math.tan(theta), 0, 12));
+      		var omega = 10 * car.speed * Math.tan(theta) / 24;
+      		var carPosition = car.position.clone()
+      			.sub(rotationCenter)
+      			.applyAxisAngle(new THREE.Vector3(0, 1, 0), omega * delta)
+      			.add(rotationCenter);
+      		car.position.copy(carPosition);
+      		car.rotation.y += omega * delta;
+      		var wheelRotationDelta = car.position.clone().sub(rotationCenter).length() * Math.abs(omega) * delta / 5 * (car.speed > 0 ? 1 : -1);
+      		car.frontWheel.rotation.x -= wheelRotationDelta;
+      		car.backWheelLeft.rotation.x -= wheelRotationDelta;
+      		car.backWheelRight.rotation.x -= wheelRotationDelta;
+      		$('.carPosition').text('(' + carPosition.x.toFixed(2) + ', ' + carPosition.z.toFixed(2) + ')');
+      	}
+      }
+      
+      function updateKeyboard() {
+      	var self = arguments.callee;
+      	var kbState = self.state = self.state || new KeyboardState();
+      	kbState.update();
+      	$('.bottom span').each(function () {
+      		var $this = $(this);
+      		$this.toggleClass('pressed', !!kbState.pressed($this.text()));
+      	});
+      	if (kbState.pressed('space')) {
+      		car.speed = 0;
+      	}
+      	if (kbState.pressed('W') && car.speed < 10) {
+      		car.speed += 0.1;
+      	}
+      	if (kbState.pressed('S') && car.speed > -10) {
+      		car.speed -= 0.1;
+      	}
+      	if (kbState.pressed('A') && car.frontWheel.rotation.y < Math.PI / 5) {
+      		car.frontWheel.rotation.y += 0.05;
+      	}
+      	if (kbState.pressed('D') && car.frontWheel.rotation.y > -Math.PI / 5) {
+      		car.frontWheel.rotation.y -= 0.05;
+      	}
+      	if (kbState.pressed('tab') && !(new Date().getTime() - self.tabTime < 200)) {
+      		controls.enable = !controls.enable;
+      		self.tabTime = new Date().getTime();
+      	}
+      }
+      
+      function createBackHelper() {
+      	var backHelperGeometry = new THREE.Geometry();
+      	var theta = car.frontWheel.rotation.y;
+      	var rotationCenter = car.localToWorld(new THREE.Vector3(-24 / Math.tan(theta), 0, 12));
+      	var carBacks = [
+      		car.localToWorld(new THREE.Vector3(-10, -12, 20)),
+      		car.localToWorld(new THREE.Vector3(+10, -12, 20)),
+      		car.localToWorld(new THREE.Vector3(-10, -12, 20))
+      	];
+      	var omega = 10 * -1 * Math.tan(theta) / 24;
+      	for (var i = 0; i < 4; i++) {
+      		for (var j = 0; j < carBacks.length; j++) {
+      			backHelperGeometry.vertices.push(
+      				carBacks[j].clone()
+      					.sub(rotationCenter)
+      					.applyAxisAngle(new THREE.Vector3(0, 1, 0), omega * i)
+      					.add(rotationCenter)
+      			);
+      		}
+      	}
+      	backHelperGeometry.vertices.push(backHelperGeometry.vertices.slice(-2)[0]);
+      	for (var i = backHelperGeometry.vertices.length - 3; i >= 0; i -= 3) {
+      		backHelperGeometry.vertices.push(backHelperGeometry.vertices[i]);
+      	}
+      	var backHelper = new THREE.Line(
+      		backHelperGeometry,
+      		new THREE.LineBasicMaterial({ color: 'yellow' })
+      	);
+      	return backHelper;
+      }
+      
+      function render() {
+      	renderer.enableScissorTest(true);
+      
+      	renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+      	renderer.setScissor(0, 0, window.innerWidth, window.innerHeight);
+      	renderer.setClearColor(0x888888);
+      	if (controls.enable) {
+      		camera.position.copy(car.localToWorld(new THREE.Vector3(0, 50, 100)));
+      		camera.lookAt(car.position);
+      		controls.center.copy(car.localToWorld(new THREE.Vector3(0, 50, 100)));
+      		controls.target.copy(car.position);
+      	}
+      	renderer.render(scene, camera);
+      
+      	var backHelper = createBackHelper();
+      	scene.add(backHelper);
+      
+      	gridXZ.material.visible = true;
+      	birdCamera.position.copy(car.position.clone().setY(birdCamera.position.y));
+      	renderer.setViewport(window.innerWidth - birdCameraSize, window.innerHeight - birdCameraSize, birdCameraSize, birdCameraSize);
+      	renderer.setScissor(window.innerWidth - birdCameraSize, window.innerHeight - birdCameraSize, birdCameraSize, birdCameraSize);
+      	renderer.setClearColor(0x000000);
+      	renderer.render(scene, birdCamera);
+      	gridXZ.material.visible = false;
+      
+      	$('.back-camera-border').toggleClass('show', car.speed < 0);
+      	if (car.speed < 0) {
+      		backCamera.position.copy(car.localToWorld(new THREE.Vector3(0, -8, 20)));
+      		backCamera.lookAt(car.localToWorld(new THREE.Vector3(0, -13, 80)));
+      		renderer.setViewport(window.innerWidth - backCameraSize, 0, backCameraSize, backCameraSize);
+      		renderer.setScissor(window.innerWidth - backCameraSize, 0, backCameraSize, backCameraSize);
+      		renderer.setClearColor(0x888888);
+      		renderer.render(scene, backCamera);
+      	}
+      	scene.remove(backHelper);
+      }
+    </script>
+  </body>
+</html>
