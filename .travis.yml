@@ -8,14 +8,12 @@ script:
 
 after_success:
 - cd gh-pages
+- git init
 - git config user.name "$GIT_USER_NAME"
 - git config user.email "$GIT_USER_EMAIL"
-- git remote add upstream "$GITHUB_REPO_GIT"
-- git fetch upstream
-- git reset upstream/gh-pages
 - git add .
 - git commit -m "Deploy to GitHub Pages by Travis \# $TRAVIS_BUILD_ID"
-- git push --quiet upstream HEAD:gh-pages
+- git push -f "$GITHUB_REPO_GIT" master:gh-pages --quiet
 
 cache:
   bundler: true
@@ -29,4 +27,4 @@ branches:
 
 env:
   global:
-    secure: J7ODykKPNTXfudKVZ6tdUALI0KgQ/B8HW4tEdh+irSz+fXNTM2lzmBXJkch/M4zSGU3Q8Ft4d6z9pA32UProURRN6DeTXru54Ne0cmtjP2ZET5kSZUspm+Mr0Tz+Xz2hXKtT8aQ3X6F3C3j+9+PAWTFxSrdBTYFex8nt5LYD7geb6oyo/tVtfaohHpUieQ+xmIH8fFv+qLddq5dfPUknx6KYdW9pSyH8Yq4ohBBgKjRvyIy/64EEnuYOF8+y7oAYFM6kQNlMD68aL1Xgejd1vGjP1zM06ZKcQt0Y8eZF4K/xnjrfVPD+TeccBLcjqMz5g0NhcGVd1IDDh66DThLg/44jCss/lZxbYwS6eXNl7bmQ7RXcuFaRrGO6D2N9IQ5qnPMMrL2rE0Nt507HJSYs4Y31DD2Tnx0mQBLtPHSJvRfG8NVlFEll2+azCuy/Ykqt8OK74dTVDKHu2b8oR9lGsuac7/7jfT+CA8dbayyXYOc0XbdkTctJDD8aItN4aGEUoOwSSo+7baDdTL77bI8WO8wHOJIEXR5szPqejP/p2W+kn+T8xUjBdPXk3YSBwkmLk5fcqbl7KIYg8lftLbMJTFV8XmUsAkCgenWihFnYDfZToI5sCDZESvF5O4fI3L4We6NnGV6W5lDOrNE3Ll81HhvRlMPZOZ0qtSY5zVhBUk8=
+    secure: PG52vqgFb/rW3c9J72wrrKD6pTuV0FPur0YVrJwGSrvGANouGXMBHVX521q7wlnZGklqqFNc2Hh2uxW96ajFq/lqjuV1bKD9Y4dIziiCsXACQqExaeVjRWOP4FIKBGgevqCQ3nFo/9hj0fR0/Mly0lBFc0UKCtO57ASGtV0b1l9Q18udJ7Fm5WiqGq0MiS+GjxRrcMZNRqSEB8bG6dcRzavqW8DpIILv7zKC6v9PWppodRRputXHvMz+vu86IklPNuFYg8+ppfeAYiRc0pyoy2ysnze+adIC928pSuGzSrJR6DN8JJxiOK5qaT8ZNaI6ednsolhWuFHxAvUpLti4OcHd6iMKsZH4PVcraFzW36pxm/CenlvvMZD5KYloqpqtmqlFJt5pGd4JNkxiAHXBt7FEldMKSvP5k5ecoaU97rNK+OCOgXvxnZb102LB4eKkUfflTyRe8/eAPMIy0YLjjggUwXuoaXylCbpI2twY9WKTX3z7NJCNNlV1NYOm3xIKhrFLQvwDKy240VkTsEwtE3fm269TUoHeSVucE6KtEHDNN9AOLYmf7jnxnEAHohw080tK6eBIFCTrwLXhmQ/98bpEZBvK6CcbE2/US1s9ntGY8uxobDXo9W916LJ9Hgebda54RPj26kJ8YawnYWL+erszj8w5av9CKx/kCB+xb6o=
