@@ -1,17 +1,32 @@
 language: node_js
 
 node_js:
-  - '6'
+- '6'
 
 script:
-  - npm run build
+- npm run build
+
+after_success:
+- cd gh-pages
+- git config user.name "$GIT_USER_NAME"
+- git config user.email "$GIT_USER_EMAIL"
+- git remote add upstream "$GITHUB_REPO_GIT"
+- git fetch upstream
+- git reset upstream/gh-pages
+- git add .
+- git commit -m "Deploy to GitHub Pages by Travis \# $TRAVIS_BUILD_ID"
+- git push --quiet upstream HEAD:gh-pages
 
 cache:
   bundler: true
 
 os:
-  - linux
+- linux
 
 branches:
   only:
-    - master
+  - master
+
+env:
+  global:
+    secure: J7ODykKPNTXfudKVZ6tdUALI0KgQ/B8HW4tEdh+irSz+fXNTM2lzmBXJkch/M4zSGU3Q8Ft4d6z9pA32UProURRN6DeTXru54Ne0cmtjP2ZET5kSZUspm+Mr0Tz+Xz2hXKtT8aQ3X6F3C3j+9+PAWTFxSrdBTYFex8nt5LYD7geb6oyo/tVtfaohHpUieQ+xmIH8fFv+qLddq5dfPUknx6KYdW9pSyH8Yq4ohBBgKjRvyIy/64EEnuYOF8+y7oAYFM6kQNlMD68aL1Xgejd1vGjP1zM06ZKcQt0Y8eZF4K/xnjrfVPD+TeccBLcjqMz5g0NhcGVd1IDDh66DThLg/44jCss/lZxbYwS6eXNl7bmQ7RXcuFaRrGO6D2N9IQ5qnPMMrL2rE0Nt507HJSYs4Y31DD2Tnx0mQBLtPHSJvRfG8NVlFEll2+azCuy/Ykqt8OK74dTVDKHu2b8oR9lGsuac7/7jfT+CA8dbayyXYOc0XbdkTctJDD8aItN4aGEUoOwSSo+7baDdTL77bI8WO8wHOJIEXR5szPqejP/p2W+kn+T8xUjBdPXk3YSBwkmLk5fcqbl7KIYg8lftLbMJTFV8XmUsAkCgenWihFnYDfZToI5sCDZESvF5O4fI3L4We6NnGV6W5lDOrNE3Ll81HhvRlMPZOZ0qtSY5zVhBUk8=
