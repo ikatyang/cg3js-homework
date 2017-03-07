@@ -1,7 +1,7 @@
 {
-  "name": "threejs-homework",
+  "name": "cg3js-homework",
   "author": "ikatyang",
-  "repository": "https://github.com/ikatyang/threejs-homework",
+  "repository": "https://github.com/ikatyang/cg3js-homework",
   "license": "MIT",
   "scripts": {
     "postinstall": "bundle install",
