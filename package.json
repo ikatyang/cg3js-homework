@@ -6,7 +6,8 @@
   "scripts": {
     "postinstall": "bundle install",
     "prebuild": "rm -rf ./gh-pages",
-    "build": "node ./scripts/build.js ./src ./gh-pages",
+    "build": "npm run build-only",
+    "build-only": "node ./scripts/build.js ./src ./gh-pages",
     "preview": "cd ./gh-pages && python -m http.server"
   }
 }
