@@ -3,14 +3,11 @@ language: node_js
 node_js:
 - '6'
 
-before_script:
-- git fetch
-
 script:
 - npm run build
 
 after_success:
-- git checkout gh-pages
+- git checkout origin/gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
 - mv -f ./gh-pages/* ./
