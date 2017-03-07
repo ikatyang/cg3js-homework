@@ -9,6 +9,7 @@ script:
 after_success:
 - git fetch
 - git checkout gh-pages
+- git pull
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
 - mv -f ./gh-pages/* ./
