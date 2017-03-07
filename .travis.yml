@@ -19,7 +19,9 @@ after_success:
 - git config user.name "$GIT_USER_NAME"
 - git config user.email "$GIT_USER_EMAIL"
 - git add --all
+- git log
 - git commit -m "Deploy to GitHub Pages by Travis $TRAVIS_COMMIT"
+- git log
 - git push -f "$GITHUB_REPO_GIT" master:gh-pages --quiet
 - ls -l
 
