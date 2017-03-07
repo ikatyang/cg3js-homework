@@ -14,9 +14,9 @@ after_success:
 - rm -rf ./gh-pages
 - git config user.name "$GIT_USER_NAME"
 - git config user.email "$GIT_USER_EMAIL"
-- git add .
+- git add --all
 - git commit -m "Deploy to GitHub Pages by Travis $TRAVIS_COMMIT"
-- git push "$GITHUB_REPO_GIT" master:gh-pages --quiet
+- git push "$GITHUB_REPO_GIT" --quiet
 
 cache:
   bundler: true
