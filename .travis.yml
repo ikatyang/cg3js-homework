@@ -13,7 +13,7 @@ after_success:
 - git config user.email "$GIT_USER_EMAIL"
 - git add .
 - git commit -m "Deploy to GitHub Pages by Travis $TRAVIS_COMMIT"
-- git push -f "$GITHUB_REPO_GIT" master:gh-pages --quiet
+- git push "$GITHUB_REPO_GIT" master:gh-pages --quiet
 
 cache:
   bundler: true
