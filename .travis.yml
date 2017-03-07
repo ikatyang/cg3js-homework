@@ -11,3 +11,7 @@ cache:
 
 os:
   - linux
+
+branches:
+  only:
+    - master
