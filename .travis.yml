@@ -20,7 +20,7 @@ after_success:
 - git config user.email "$GIT_USER_EMAIL"
 - git add --all
 - git commit -m "Deploy to GitHub Pages by Travis $TRAVIS_COMMIT"
-- git push "$GITHUB_REPO_GIT" master:gh-pages --quiet
+- git push -f "$GITHUB_REPO_GIT" master:gh-pages --quiet
 - ls -l
 
 cache:
