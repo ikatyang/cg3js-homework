@@ -1,0 +1,13 @@
+language: node_js
+
+node_js:
+  - '6'
+
+script:
+  - npm run build
+
+cache:
+  bundler: true
+
+os:
+  - linux

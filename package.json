@@ -1,7 +1,10 @@
 {
   "name": "threejs-homework",
   "author": "ikatyang",
+  "repository": "https://github.com/ikatyang/threejs-homework",
+  "license": "MIT",
   "scripts": {
+    "postinstall": "bundle install",
     "prebuild": "rm -rf ./gh-pages",
     "build": "node ./scripts/build.js ./src ./gh-pages",
     "preview": "cd ./gh-pages && python -m http.server"

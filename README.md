@@ -1,11 +1,11 @@
 # threejs-homework
 
-require `RubyGems`, `Node.js@>=6` , `Python@3.x`
+require `RubyGems@stable`, `Bundler@stable`, `Node.js@>=6` , `Python@3.x`
 
-#### Install DevDependency
+#### Installation
 
 ```sh
-gem install haml
+npm install
 ```
 
 #### Generate HTML
