@@ -7,6 +7,7 @@ script:
 - npm run build
 
 after_success:
+- git fetch
 - git checkout gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
@@ -16,7 +17,7 @@ after_success:
 - git config user.email "$GIT_USER_EMAIL"
 - git add --all
 - git commit -m "Deploy to GitHub Pages by Travis $TRAVIS_COMMIT"
-- git push "$GITHUB_REPO_GIT" --quiet
+- git push "$GITHUB_REPO_GIT" master:gh-pages --quiet
 
 cache:
   bundler: true
