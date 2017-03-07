@@ -7,6 +7,7 @@ script:
 - npm run build
 
 after_success:
+- git fetch
 - git checkout gh-pages
 - shopt -s extglob
 - rm -rf ./!(gh-pages)
